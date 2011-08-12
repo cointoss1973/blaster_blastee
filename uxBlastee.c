@@ -17,6 +17,9 @@ modification history
 #include <netdb.h>
 #include <sys/times.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 int	blastNum;
 int 	wdIntvl = 60;
@@ -46,35 +49,31 @@ static void blastRate ();
  */
 
 
-main (argc, argv)
-    int		argc;
-    char	*argv [];
-    {
+int main (int argc, char *argv[])
+{
     struct sockaddr_in	serverAddr; /* server's address */
     struct sockaddr_in  clientAddr; /* client's address */
     char   *buffer;
     int	   sock;
     int    snew;
-    int    len;
+    socklen_t len;
     int	   size;
     int	   blen;
 
-    if (argc < 4)
-	{
+    if (argc < 4) {
 	printf ("usage: %s port size bufLen\n", argv [0]);
 	exit (1);
-	}
+    }
 
     size = atoi (argv [2]);
     blen = atoi (argv [3]);
 
     buffer = (char *) malloc (size);
 
-    if (buffer == NULL)
-	{
+    if (buffer == NULL) {
 	perror ("cannot allocate buffer");
 	exit (1);
-	}
+    }
 
     /* Associate SIGALARM signal with blastRate signal handler */
     signal (SIGALRM, blastRate);
@@ -86,72 +85,66 @@ main (argc, argv)
     bzero (&serverAddr, sizeof (serverAddr));
     bzero (&clientAddr, sizeof (clientAddr));
 
-   /* Open the socket. Use ARPA Internet address format and stream sockets. */
+    /* Open the socket. Use ARPA Internet address format and stream sockets. */
     sock = socket (AF_INET, SOCK_STREAM, 0);
 
-    if (sock < 0)
-	{
+    if (sock < 0) {
 	perror ("cannot open socket");
 	exit (1);
-	}
+    }
 
    /* Set up our internet address, and bind it so the client can connect. */
-    serverAddr.sin_family	= AF_INET;
+    serverAddr.sin_family = AF_INET;
     serverAddr.sin_port	= htons (atoi (argv [1]));
 
-    if (bind (sock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0)
-	{
+    if (bind (sock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0) {
     	perror ("bind error");
 	exit (1);
-	}
+    }
 
     /* Listen, for the client to connect to us. */
-    if (listen (sock, 2) < 0)
-	{
+    if (listen (sock, 2) < 0) {
     	perror ("listen failed");
 	exit (1);
-	}
+    }
 
     len = sizeof (clientAddr);
 
     snew = accept (sock, (struct sockaddr *) &clientAddr, &len);
-    if (snew == -1)
-        {
+    if (snew == -1) {
         perror ("accept failed");
         close (sock);
         exit (1);
-        }
+    }
 
     blastNum = 0;
 
     /* maximum size of socket-level receive buffer */
-    if (setsockopt (snew, SOL_SOCKET, SO_RCVBUF, (char *)&blen, sizeof (blen)) < 0)
-	{
+    if (setsockopt (snew, SOL_SOCKET, SO_RCVBUF, (char *)&blen, sizeof (blen)) < 0) {
 	perror ("setsockopt SO_SNDBUF failed");
 	free (buffer);
 	exit (1);
-	}
+    }
 
 
-    for (;;)
-	{
+    for (;;) {
 	int numRead;
 
-	if ((numRead = read (snew, buffer, size)) < 0)
-	    {
+	if ((numRead = read (snew, buffer, size)) < 0) {
 	    perror ("blastee read error");
 	    break;
-	    }
-
-	blastNum += numRead;
 	}
+	
+	blastNum += numRead;
+    }
 
     close (sock);
     close (snew);
-
+    
     free (buffer);
     printf ("blastee end.\n");
-    }
+    return 0;
+}
 
 /*****************************************************************************
  * blastRate - signal handler routine executed every one minute which reports
@@ -159,16 +152,15 @@ main (argc, argv)
  *
  */
 
-static void blastRate ()
-    {
-    if (blastNum > 0)
-	{
-	printf ("%d bytes/sec tot %d\n", blastNum / wdIntvl, blastNum);
+static void blastRate (void)
+{
+    if (blastNum > 0) {
+	printf ("%d bytes/sec (total %d\n)", blastNum / wdIntvl, blastNum);
 	blastNum = 0;
-	}
-    else
-	{
+    } else {
 	printf ("No bytes read in the last 60 seconds.\n");
-	}
-    alarm (60);
     }
+    alarm (60);
+}
+
+/* end of file */

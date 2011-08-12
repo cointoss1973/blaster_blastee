@@ -31,48 +31,46 @@ modification history
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <netdb.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-
-main (argc, argv)
-    int		argc;
-    char	*argv [];
-    {
+int main (int argc, char *argv[])
+{
     struct sockaddr_in	sin;
     int    sock;
-    int    ix = 0;
     char   *buffer; 
     int	   blen; /* maximum size of socket-level send buffer */
     int    size; /* size of the message to be sent */
     struct hostent  *hp;
     struct hostent  *gethostbyname ();
 
-    if (argc < 5)
-	{
+    if (argc < 5) {
 	printf ("usage: %s targetname port size bufLen\n", argv [0]);
 	exit (1);
-	}
+    }
 
     bzero (&sin, sizeof (sin));
 
     sock = socket (AF_INET, SOCK_STREAM, 0);
 
-    if (sock < 0)
-        {
+    if (sock < 0) {
 	perror ("cannot open socket");
         exit (1);
-        }
+    }
 
     hp = gethostbyname (argv[1]);
-    if (hp == 0 && (sin.sin_addr.s_addr = inet_addr (argv [1])) == -1)
-	{
+    if (hp == 0 && (sin.sin_addr.s_addr = inet_addr (argv [1])) == -1) {
 	fprintf (stderr, "%s: unkown host\n", argv [1]);
 	exit (2);
-	}
+    }
 
-    if (hp != 0)
+    if (hp != 0) {
         bcopy (hp->h_addr, &sin.sin_addr, hp->h_length);
+    }
 
     sin.sin_family 	= AF_INET;
     sin.sin_port 	= htons (atoi (argv [2]));
@@ -81,40 +79,38 @@ main (argc, argv)
     blen = atoi (argv [4]);
 
 
-    if ((buffer = (char *) malloc (size)) == NULL)
-	{
-	perror ("cannot allocate buffer of size ");
+    if ((buffer = (char *) malloc (size)) == NULL) {
+	perror ("cannot allocate buffer of size");
 	exit (1);
-	}
+    }
 
-    if (setsockopt (sock, SOL_SOCKET, SO_RCVBUF, (char*) &blen, sizeof (blen)) < 0)
-	{
+    if (setsockopt (sock, SOL_SOCKET, SO_RCVBUF, (char*) &blen, sizeof (blen)) < 0) {
 	perror ("setsockopt SO_RCVBUF failed");
 	exit (1);
-	}
+    }
 
-    if (connect (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0)
-	{
+    if (connect (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0) {
 	perror ("connect");
     	printf ("connect failed: host %s port %d\n", inet_ntoa (sin.sin_addr),
 		ntohs (sin.sin_port));
 
 	exit (1);
-	}
+    }
     
-    for (;;)
-	{
+    for (;;) {
 	int y;
-	if ((y = write(sock, buffer, size)) < 0)
-	    {
+	if ((y = write(sock, buffer, size)) < 0) {
 	    perror ("blaster write error");
 	    break;
-	    }
 	}
+    }
     
     close (sock);
     
     free (buffer);
     printf ("blaster exit.\n");
-    }
 
+    return 0;
+}
+
+/* end of file */

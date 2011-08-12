@@ -84,8 +84,8 @@ int main (int argc, char *argv[])
 	exit (1);
     }
 
-    if (setsockopt (sock, SOL_SOCKET, SO_RCVBUF, (char*) &blen, sizeof (blen)) < 0) {
-	perror ("setsockopt SO_RCVBUF failed");
+    if (setsockopt (sock, SOL_SOCKET, SO_SNDBUF, (char*) &blen, sizeof (blen)) < 0) {
+	perror ("setsockopt SO_SNDBUF failed");
 	exit (1);
     }
 

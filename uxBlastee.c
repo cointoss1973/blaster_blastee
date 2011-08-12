@@ -21,14 +21,15 @@ modification history
 #include <unistd.h>
 #include <string.h>
 
-int	blastNum;
+long	blastNum;
 int 	wdIntvl = 10;
 
 #define	FALSE	0
 #define TRUE	1
 
-static void blastRate ();
 
+static void blastRecv(int snew, int size);
+static void blastRate();
 
 /*****************************************************************************
  * blastee - server process on UNIX host
@@ -53,12 +54,13 @@ int main (int argc, char *argv[])
 {
     struct sockaddr_in	serverAddr; /* server's address */
     struct sockaddr_in  clientAddr; /* client's address */
-    char   *buffer;
+
     int	   sock;
     int    snew;
     socklen_t len;
     int	   size;
     int	   blen;
+    int    on = 1;
 
     if (argc < 4) {
 	printf ("usage: %s port size bufLen\n", argv [0]);
@@ -66,14 +68,9 @@ int main (int argc, char *argv[])
     }
 
     size = atoi (argv [2]);
-    blen = atoi (argv [3]);
+    blen = atoi (argv [3]); /* SO_RCVBUF */
 
-    buffer = (char *) malloc (size);
-
-    if (buffer == NULL) {
-	perror ("cannot allocate buffer");
-	exit (1);
-    }
+    printf("%s recvsize:%d SO_RCVBUF:%d cycle:%d\n",argv[0], size, blen, wdIntvl);
 
     /* Associate SIGALARM signal with blastRate signal handler */
     signal (SIGALRM, blastRate);
@@ -92,6 +89,16 @@ int main (int argc, char *argv[])
 	perror ("cannot open socket");
 	exit (1);
     }
+    /* maximum size of socket-level receive buffer */
+    if (setsockopt (sock, SOL_SOCKET, SO_RCVBUF, (char *)&blen, sizeof (blen)) == -1) {
+	perror ("setsockopt SO_RCVBUF failed");
+	exit (1);
+    }
+    if (setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) == -1){
+	perror ("setsockopt SO_REUSEADDR failed");
+	exit (1);
+    }
+    
 
    /* Set up our internet address, and bind it so the client can connect. */
     serverAddr.sin_family = AF_INET;
@@ -110,19 +117,34 @@ int main (int argc, char *argv[])
 
     len = sizeof (clientAddr);
 
-    snew = accept (sock, (struct sockaddr *) &clientAddr, &len);
-    if (snew == -1) {
-        perror ("accept failed");
-        close (sock);
-        exit (1);
+    /**/
+    for(;;) {
+	blastNum = 0;
+	printf("accept...\n");
+	snew = accept (sock, (struct sockaddr *) &clientAddr, &len);
+	if (snew == -1) {
+	    perror ("accept failed");
+	    close (sock);
+	    exit (1);
+	}
+	blastRecv(snew, size);
     }
 
-    blastNum = 0;
 
-    /* maximum size of socket-level receive buffer */
-    if (setsockopt (snew, SOL_SOCKET, SO_RCVBUF, (char *)&blen, sizeof (blen)) < 0) {
-	perror ("setsockopt SO_SNDBUF failed");
-	free (buffer);
+    close (sock);
+    close (snew);
+    
+    printf ("blastee end.\n");
+    return 0;
+}
+
+
+static void blastRecv(int snew, int size)
+{
+    char   *buffer = (char *) malloc(size);
+
+    if (buffer == NULL) {
+	perror ("cannot allocate buffer");
 	exit (1);
     }
 
@@ -134,17 +156,16 @@ int main (int argc, char *argv[])
 	    perror ("blastee read error");
 	    break;
 	}
-	
+	if (numRead == 0 ){
+	    break; /* disconnect by peer */
+	}
+
 	blastNum += numRead;
     }
-
-    close (sock);
-    close (snew);
-    
     free (buffer);
-    printf ("blastee end.\n");
-    return 0;
+    close (snew);
 }
+
 
 /*****************************************************************************
  * blastRate - signal handler routine executed every one minute which reports
@@ -155,8 +176,8 @@ int main (int argc, char *argv[])
 static void blastRate (void)
 {
     if (blastNum > 0) {
-	/*printf ("%d bytes/sec (total %d)\n", blastNum / wdIntvl, blastNum);*/
-	printf ("%.1f MB/sec (total %d)\n", (blastNum/(1024*1024)) / (double)wdIntvl, blastNum);
+	/*printf ("%ld bytes/sec (total %d)\n", blastNum / wdIntvl, blastNum);*/
+	printf ("%.1f MB/sec (total %ld)\n", (blastNum/(1024*1024)) / (double)wdIntvl, blastNum);
 	blastNum = 0;
     } else {
 	printf ("No bytes read in the last %d seconds.\n",wdIntvl);

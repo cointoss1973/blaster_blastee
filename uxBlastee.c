@@ -22,7 +22,7 @@ modification history
 #include <string.h>
 
 int	blastNum;
-int 	wdIntvl = 60;
+int 	wdIntvl = 10;
 
 #define	FALSE	0
 #define TRUE	1
@@ -77,7 +77,7 @@ int main (int argc, char *argv[])
 
     /* Associate SIGALARM signal with blastRate signal handler */
     signal (SIGALRM, blastRate);
-    alarm (60); /* Start signal handler after a minute */
+    alarm (wdIntvl); /* Start signal handler after a minute */
 
     /* Zero out the sock_addr structures.
      * This MUST be done before the socket calls.
@@ -155,12 +155,13 @@ int main (int argc, char *argv[])
 static void blastRate (void)
 {
     if (blastNum > 0) {
-	printf ("%d bytes/sec (total %d\n)", blastNum / wdIntvl, blastNum);
+	/*printf ("%d bytes/sec (total %d)\n", blastNum / wdIntvl, blastNum);*/
+	printf ("%.1f MB/sec (total %d)\n", (blastNum/(1024*1024)) / (double)wdIntvl, blastNum);
 	blastNum = 0;
     } else {
-	printf ("No bytes read in the last 60 seconds.\n");
+	printf ("No bytes read in the last %d seconds.\n",wdIntvl);
     }
-    alarm (60);
+    alarm (wdIntvl);
 }
 
 /* end of file */

@@ -32,7 +32,7 @@ static void blastRecv(int snew, int size);
 static void blastRate();
 
 /*****************************************************************************
- * blastee - server process on UNIX host
+ * blastee - server process on UNIX host or VxWorks
  *
  * DESCRIPTION
  *
@@ -46,31 +46,25 @@ static void blastRate();
  *     To run this blastee task from UNIX host do the following:
  *     % blastee   7000  1000  16000 &
  *
+ *     To run this blastee task from the VxWorks shell do as follows:
+ *     -> sp (blastee, 7000, 1000, 16000)
  *
  */
-
-
-int main (int argc, char *argv[])
+int blaster(int port, int size, int blen)
 {
     struct sockaddr_in	serverAddr; /* server's address */
     struct sockaddr_in  clientAddr; /* client's address */
 
     int	   sock;
     int    snew;
+#ifdef VXWORKS
+    int    len;
+#else
     socklen_t len;
-    int	   size;
-    int	   blen;
+#endif
     int    on = 1;
 
-    if (argc < 4) {
-	printf ("usage: %s port size bufLen\n", argv [0]);
-	exit (1);
-    }
-
-    size = atoi (argv [2]);
-    blen = atoi (argv [3]); /* SO_RCVBUF */
-
-    printf("%s recvsize:%d SO_RCVBUF:%d cycle:%d\n",argv[0], size, blen, wdIntvl);
+    printf("blastee  port:%d recvsize:%d SO_RCVBUF:%d cycle:%d\n",port, size, blen, wdIntvl);
 
     /* Associate SIGALARM signal with blastRate signal handler */
     signal (SIGALRM, blastRate);
@@ -79,8 +73,8 @@ int main (int argc, char *argv[])
     /* Zero out the sock_addr structures.
      * This MUST be done before the socket calls.
      */
-    bzero (&serverAddr, sizeof (serverAddr));
-    bzero (&clientAddr, sizeof (clientAddr));
+    bzero ((void *)&serverAddr, sizeof (serverAddr));
+    bzero ((void *)&clientAddr, sizeof (clientAddr));
 
     /* Open the socket. Use ARPA Internet address format and stream sockets. */
     sock = socket (AF_INET, SOCK_STREAM, 0);
@@ -102,7 +96,7 @@ int main (int argc, char *argv[])
 
    /* Set up our internet address, and bind it so the client can connect. */
     serverAddr.sin_family = AF_INET;
-    serverAddr.sin_port	= htons (atoi (argv [1]));
+    serverAddr.sin_port	= htons (port);
 
     if (bind (sock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0) {
     	perror ("bind error");
@@ -137,6 +131,24 @@ int main (int argc, char *argv[])
     printf ("blastee end.\n");
     return 0;
 }
+
+#ifndef VXWORKS
+int main (int argc, char *argv[])
+{
+    int port, size, blen;
+
+    if (argc < 4) {
+	printf ("usage: %s port size bufLen\n", argv [0]);
+	exit (1);
+    }
+
+    port = atoi (argv [1]);
+    size = atoi (argv [2]);
+    blen = atoi (argv [3]); /* SO_RCVBUF */
+
+    return blaster(port, size, blen);
+}
+#endif /* VXWORKS */
 
 
 static void blastRecv(int snew, int size)

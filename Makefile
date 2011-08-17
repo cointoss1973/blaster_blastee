@@ -5,11 +5,11 @@ CFLAGS = -g -Wall -O0
 #LDLIBS = 
 
 
-EXE1 = uxblastee
-EXE2 = uxblaster
+EXE1 = blastee
+EXE2 = blaster
 
-OBJS1 = uxBlastee.o
-OBJS2 = uxBlaster.o
+OBJS1 = blastee.o
+OBJS2 = blaster.o
 OBJS  = $(OBJS1) $(OBJS2)
 SHARE = 
 

@@ -11,7 +11,7 @@ modification history
 */
 
 /*****************************************************************************
- * blaster - client program for UNIX host
+ * blaster - client program for UNIX host or VxWorks
  *
  * DESCRIPTION
  *
@@ -25,6 +25,10 @@ modification history
  *     To run this blaster program from your UNIX host do the following: 
  *     % blaster  <target name>  7000  1000  16000 &
  *
+ * EXAMPLE:
+ *
+ *     To run this blaster task from the VxWorks shell do as follows: 
+ *     -> sp (blaster, "192.2.200.42", 7000, 1000, 16000)
  *
  */
 
@@ -38,22 +42,15 @@ modification history
 #include <string.h>
 #include <unistd.h>
 
-int main (int argc, char *argv[])
+void blaster( const char *targetAddr, int port, int size, int blen )
 {
     struct sockaddr_in	sin;
     int    sock;
     char   *buffer; 
-    int	   blen; /* maximum size of socket-level send buffer */
-    int    size; /* size of the message to be sent */
-    struct hostent  *hp;
-    struct hostent  *gethostbyname ();
 
-    if (argc < 5) {
-	printf ("usage: %s targetname port size bufLen\n", argv [0]);
-	exit (1);
-    }
+    printf("blaster target:%s  port:%d writesize:%d SO_SNDBUF:%d\n", targetAddr, port, size, blen);
 
-    bzero (&sin, sizeof (sin));
+    bzero ((void *)&sin, sizeof (sin));
 
     sock = socket (AF_INET, SOCK_STREAM, 0);
 
@@ -62,21 +59,23 @@ int main (int argc, char *argv[])
         exit (1);
     }
 
-    hp = gethostbyname (argv[1]);
-    if (hp == 0 && (sin.sin_addr.s_addr = inet_addr (argv [1])) == -1) {
-	fprintf (stderr, "%s: unkown host\n", argv [1]);
+#ifdef VXWORKS
+    sin.sin_addr.s_addr = inet_addr(targetAddr);/* Support dot-decimal notation only */
+#else
+    struct hostent  *hp;
+    struct hostent  *gethostbyname ();
+    hp = gethostbyname (targetAddr);
+    if (hp == 0 && (sin.sin_addr.s_addr = inet_addr (targetAddr)) == -1) {
+	fprintf (stderr, "%s: unkown host\n", targetAddr);
 	exit (2);
     }
-
     if (hp != 0) {
         bcopy (hp->h_addr, &sin.sin_addr, hp->h_length);
     }
+#endif
 
     sin.sin_family 	= AF_INET;
-    sin.sin_port 	= htons (atoi (argv [2]));
-    size		= atoi (argv [3]);
-
-    blen = atoi (argv [4]);
+    sin.sin_port 	= htons (port);
 
 
     if ((buffer = (char *) malloc (size)) == NULL) {
@@ -93,7 +92,6 @@ int main (int argc, char *argv[])
 	perror ("connect");
     	printf ("connect failed: host %s port %d\n", inet_ntoa (sin.sin_addr),
 		ntohs (sin.sin_port));
-
 	exit (1);
     }
     
@@ -108,9 +106,28 @@ int main (int argc, char *argv[])
     close (sock);
     
     free (buffer);
+}
+
+#ifndef VXWORKS
+int main (int argc, char *argv[])
+{
+    int port, size, blen;
+
+    if (argc < 5) {
+	printf ("usage: %s targetname port size bufLen\n", argv [0]);
+	exit (1);
+    }
+
+    port = atoi (argv [2]);
+    size = atoi (argv [3]);
+    blen = atoi (argv [4]);
+
+    blaster(argv[1], port, size, blen);
+
     printf ("blaster exit.\n");
 
     return 0;
 }
+#endif
 
 /* end of file */

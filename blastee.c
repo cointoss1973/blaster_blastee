@@ -50,7 +50,7 @@ static void blastRate();
  *     -> sp (blastee, 7000, 1000, 16000)
  *
  */
-int blaster(int port, int size, int blen)
+int blastee(int port, int size, int blen)
 {
     struct sockaddr_in	serverAddr; /* server's address */
     struct sockaddr_in  clientAddr; /* client's address */
@@ -146,7 +146,7 @@ int main (int argc, char *argv[])
     size = atoi (argv [2]);
     blen = atoi (argv [3]); /* SO_RCVBUF */
 
-    return blaster(port, size, blen);
+    return blastee(port, size, blen);
 }
 #endif /* VXWORKS */
 

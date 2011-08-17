@@ -1,0 +1,196 @@
+Document file - DO NOT EDIT
+
+<BEGIN> BUILD_PPC603gnu_BUILDRULE
+blastee.out
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_AR
+arppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_ARCHIVE
+$(PRJ_DIR)/PPC603gnu/blastee.a
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_AS
+ccppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_CC
+ccppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_CC_ARCH_SPEC
+-mcpu=603 -mstrict-align
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_CFLAGS
+-g \
+	-mcpu=603 \
+	-mstrict-align \
+	-ansi \
+	-fno-builtin \
+	-I. \
+	-I$(WIND_BASE)/target/h/ \
+	-DCPU=PPC603 \
+	-DTOOL_FAMILY=gnu \
+	-DTOOL=gnu \
+	-mlongcall \
+	-DVXWORKS
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_CFLAGS_AS
+-g \
+	-mcpu=603 \
+	-mstrict-align \
+	-ansi \
+	-fno-builtin \
+	-P \
+	-xassembler-with-cpp \
+	-I. \
+	-I$(WIND_BASE)/target/h/ \
+	-DCPU=PPC603 \
+	-DTOOL_FAMILY=gnu \
+	-DTOOL=gnu
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_CPP
+ccppc -E -P
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_HEX_FLAGS
+
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_LD
+ldppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_LDDEPS
+
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_LDFLAGS
+-X -N
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_LD_PARTIAL
+ccppc -r -nostdlib -Wl,-X
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_LD_PARTIAL_FLAGS
+-X -r
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_NM
+nmppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_DEFINE_MACRO
+-D
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_DEPEND
+-M -w
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_GENERATE_DEPENDENCY_FILE
+-MD
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_INCLUDE_DIR
+-I
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_LANG_C
+-xc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_OPTION_UNDEFINE_MACRO
+-U
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_POST_BUILD_RULE
+
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_PRJ_LIBS
+
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_SIZE
+sizeppc
+<END>
+
+<BEGIN> BUILD_PPC603gnu_MACRO_TOOL_FAMILY
+gnu
+<END>
+
+<BEGIN> BUILD_PPC603gnu_RO_DEPEND_PATH
+{$(WIND_BASE)/target/h/} \
+	{$(WIND_BASE)/target/src/} \
+	{$(WIND_BASE)/target/config/}
+<END>
+
+<BEGIN> BUILD_PPC603gnu_TC
+::tc_PPC603gnu
+<END>
+
+<BEGIN> BUILD_RULE_archive
+
+<END>
+
+<BEGIN> BUILD_RULE_blastee.out
+
+<END>
+
+<BEGIN> BUILD_RULE_blastee.pl
+
+<END>
+
+<BEGIN> BUILD_RULE_objects
+
+<END>
+
+<BEGIN> BUILD__CURRENT
+PPC603gnu
+<END>
+
+<BEGIN> BUILD__LIST
+PPC603gnu
+<END>
+
+<BEGIN> CORE_INFO_TYPE
+::prj_vxApp
+<END>
+
+<BEGIN> CORE_INFO_VERSION
+2.2
+<END>
+
+<BEGIN> FILE_C:/Cygwin/home/bmuser/workspace/tool/blaster_blastee/blastee.c_dependDone
+TRUE
+<END>
+
+<BEGIN> FILE_C:/Cygwin/home/bmuser/workspace/tool/blaster_blastee/blastee.c_dependencies
+$(WIND_BASE)/host/$(WIND_HOST_TYPE)/lib/gcc-lib/powerpc-wrs-vxworks/gcc-2.96/include/stddef.h \
+	$(WIND_BASE)/host/$(WIND_HOST_TYPE)/lib/gcc-lib/powerpc-wrs-vxworks/gcc-2.96/include/stdarg.h \
+	$(WIND_BASE)/host/$(WIND_HOST_TYPE)/lib/gcc-lib/powerpc-wrs-vxworks/gcc-2.96/include/va-ppc.h
+<END>
+
+<BEGIN> FILE_C:/Cygwin/home/bmuser/workspace/tool/blaster_blastee/blastee.c_objects
+blastee.o
+<END>
+
+<BEGIN> FILE_C:/Cygwin/home/bmuser/workspace/tool/blaster_blastee/blastee.c_tool
+C/C++ compiler
+<END>
+
+<BEGIN> PROJECT_FILES
+C:/Cygwin/home/bmuser/workspace/tool/blaster_blastee/blastee.c
+<END>
+
+<BEGIN> userComments
+<Enter description here>
+<END>
+

@@ -23,4 +23,4 @@ $(EXE2): $(OBJS2) $(SHARE)
 
 .PHONY: clean
 clean: 
-	rm -f $(OBJS) $(SHARE)
+	rm -f $(EXE1) $(EXE2) $(OBJS) $(SHARE)

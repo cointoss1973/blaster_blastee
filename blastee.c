@@ -29,6 +29,8 @@ int 	wdIntvl = 10;
 
 
 static void blastRecv(int snew, int size);
+static void blastHandler(int intvl);
+static void blastAlarm(int intvl);
 static void blastRate();
 
 /*****************************************************************************
@@ -66,9 +68,7 @@ int blastee(int port, int size, int blen)
 
     printf("blastee  port:%d recvsize:%d SO_RCVBUF:%d cycle:%d\n",port, size, blen, wdIntvl);
 
-    /* Associate SIGALARM signal with blastRate signal handler */
-    signal (SIGALRM, blastRate);
-    alarm (wdIntvl); /* Start signal handler after a minute */
+    blastHandler(wdIntvl);
 
     /* Zero out the sock_addr structures.
      * This MUST be done before the socket calls.
@@ -132,6 +132,7 @@ int blastee(int port, int size, int blen)
     return 0;
 }
 
+
 #ifndef VXWORKS
 int main (int argc, char *argv[])
 {
@@ -179,22 +180,69 @@ static void blastRecv(int snew, int size)
 }
 
 
+#ifdef VXWORKS
+#include <wdLib.h>
+static WDOG_ID blastWid;
+
+static void blastHandler(int intvl)
+{
+    if (blastWid == NULL && (blastWid = wdCreate ()) == NULL) {
+	perror ("cannot create blast watchdog");
+	exit (1);
+    }
+
+    blastAlarm(wdIntvl);    /* Start watchdog after a minute */
+}
+#else
+static void blastHandler(int intvl)
+{
+    /* Associate SIGALARM signal with blastRate signal handler */
+    signal (SIGALRM, blastRate);
+    blastAlarm(intvl); /* Start signal handler after a minute */
+}
+#endif
+
+
+
+static void blastAlarm(int intvl)
+{
+#ifdef VXWORKS
+    wdStart (blastWid, sysClkRateGet() * wdIntvl, (FUNCPTR)blastRate, 0);
+#else
+    alarm(intvl);
+#endif
+}
+
+
 /*****************************************************************************
  * blastRate - signal handler routine executed every one minute which reports
  *             number of  bytes read
  *
  */
+#ifdef VXWORKS
+#include <logLib.h>
+#endif
 
 static void blastRate (void)
 {
+#ifdef VXWORKS
     if (blastNum > 0) {
-	/*printf ("%ld bytes/sec (total %d)\n", blastNum / wdIntvl, blastNum);*/
-	printf ("%.1f MB/sec (total %ld)\n", (blastNum/(1024*1024)) / (double)wdIntvl, blastNum);
+	/* ISRs must not call routines that use a floating-point coprocessor. */
+	logMsg ("%d bytes/sec\n", blastNum / wdIntvl,0, 0, 0, 0, 0);
+	blastNum = 0;
+    } else {
+	logMsg ("No bytes read in the last %d seconds.\n",wdIntvl, 0, 0, 0, 0, 0);
+    }
+#else
+    double rateMB = (blastNum/(1024*1024)) / (double)wdIntvl;
+    if (blastNum > 0) {
+	printf ("%.1f MB/sec (total %ld)\n", rateMB, blastNum);
 	blastNum = 0;
     } else {
 	printf ("No bytes read in the last %d seconds.\n",wdIntvl);
     }
-    alarm (wdIntvl);
+#endif
+    blastAlarm (wdIntvl);
 }
 
 /* end of file */

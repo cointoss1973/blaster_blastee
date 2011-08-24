@@ -55,7 +55,7 @@ void blaster( const char *targetAddr, int port, int size, int blen )
     sock = socket (AF_INET, SOCK_STREAM, 0);
 
     if (sock < 0) {
-	perror ("cannot open socket");
+		perror ("cannot open socket");
         exit (1);
     }
 
@@ -66,8 +66,8 @@ void blaster( const char *targetAddr, int port, int size, int blen )
     struct hostent  *gethostbyname ();
     hp = gethostbyname (targetAddr);
     if (hp == 0 && (sin.sin_addr.s_addr = inet_addr (targetAddr)) == -1) {
-	fprintf (stderr, "%s: unkown host\n", targetAddr);
-	exit (2);
+		fprintf (stderr, "%s: unkown host\n", targetAddr);
+		exit (2);
     }
     if (hp != 0) {
         bcopy (hp->h_addr, &sin.sin_addr, hp->h_length);
@@ -79,28 +79,28 @@ void blaster( const char *targetAddr, int port, int size, int blen )
 
 
     if ((buffer = (char *) malloc (size)) == NULL) {
-	perror ("cannot allocate buffer of size");
-	exit (1);
+		perror ("cannot allocate buffer of size");
+		exit (1);
     }
 
     if (setsockopt (sock, SOL_SOCKET, SO_SNDBUF, (char*) &blen, sizeof (blen)) < 0) {
-	perror ("setsockopt SO_SNDBUF failed");
-	exit (1);
+		perror ("setsockopt SO_SNDBUF failed");
+		exit (1);
     }
 
     if (connect (sock, (struct sockaddr *) &sin, sizeof (sin)) < 0) {
-	perror ("connect");
+		perror ("connect");
     	printf ("connect failed: host %s port %d\n", inet_ntoa (sin.sin_addr),
 		ntohs (sin.sin_port));
-	exit (1);
+		exit (1);
     }
     
     for (;;) {
-	int y;
-	if ((y = write(sock, buffer, size)) < 0) {
-	    perror ("blaster write error");
-	    break;
-	}
+		int y;
+		if ((y = write(sock, buffer, size)) < 0) {
+		    perror ("blaster write error");
+		    break;
+		}
     }
     
     close (sock);
@@ -114,8 +114,8 @@ int main (int argc, char *argv[])
     int port, size, blen;
 
     if (argc < 5) {
-	printf ("usage: %s targetname port size bufLen\n", argv [0]);
-	exit (1);
+		printf ("usage: %s targetname port size bufLen\n", argv [0]);
+		exit (1);
     }
 
     port = atoi (argv [2]);

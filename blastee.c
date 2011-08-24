@@ -80,48 +80,48 @@ int blastee(int port, int size, int blen)
     sock = socket (AF_INET, SOCK_STREAM, 0);
 
     if (sock < 0) {
-	perror ("cannot open socket");
-	exit (1);
+		perror ("cannot open socket");
+		exit (1);
     }
     /* maximum size of socket-level receive buffer */
     if (setsockopt (sock, SOL_SOCKET, SO_RCVBUF, (char *)&blen, sizeof (blen)) == -1) {
-	perror ("setsockopt SO_RCVBUF failed");
-	exit (1);
+		perror ("setsockopt SO_RCVBUF failed");
+		exit (1);
     }
     if (setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on)) == -1){
-	perror ("setsockopt SO_REUSEADDR failed");
-	exit (1);
+		perror ("setsockopt SO_REUSEADDR failed");
+		exit (1);
     }
     
 
-   /* Set up our internet address, and bind it so the client can connect. */
+	/* Set up our internet address, and bind it so the client can connect. */
     serverAddr.sin_family = AF_INET;
     serverAddr.sin_port	= htons (port);
 
     if (bind (sock, (struct sockaddr *) &serverAddr, sizeof (serverAddr)) < 0) {
     	perror ("bind error");
-	exit (1);
+		exit (1);
     }
 
     /* Listen, for the client to connect to us. */
     if (listen (sock, 2) < 0) {
     	perror ("listen failed");
-	exit (1);
+		exit (1);
     }
 
     len = sizeof (clientAddr);
 
     /**/
     for(;;) {
-	blastNum = 0;
-	printf("accept...\n");
-	snew = accept (sock, (struct sockaddr *) &clientAddr, &len);
-	if (snew == -1) {
-	    perror ("accept failed");
-	    close (sock);
-	    exit (1);
-	}
-	blastRecv(snew, size);
+		blastNum = 0;
+		printf("accept...\n");
+		snew = accept (sock, (struct sockaddr *) &clientAddr, &len);
+		if (snew == -1) {
+		    perror ("accept failed");
+		    close (sock);
+			exit (1);
+		}
+		blastRecv(snew, size);
     }
 
 
@@ -139,8 +139,8 @@ int main (int argc, char *argv[])
     int port, size, blen;
 
     if (argc < 4) {
-	printf ("usage: %s port size bufLen\n", argv [0]);
-	exit (1);
+		printf ("usage: %s port size bufLen\n", argv [0]);
+		exit (1);
     }
 
     port = atoi (argv [1]);
@@ -156,24 +156,24 @@ static void blastRecv(int snew, int size)
 {
     char   *buffer = (char *) malloc(size);
 
-    if (buffer == NULL) {
-	perror ("cannot allocate buffer");
-	exit (1);
+	if (buffer == NULL) {
+		perror ("cannot allocate buffer");
+		exit (1);
     }
 
 
     for (;;) {
-	int numRead;
+		int numRead;
 
-	if ((numRead = read (snew, buffer, size)) < 0) {
-	    perror ("blastee read error");
-	    break;
-	}
-	if (numRead == 0 ){
-	    break; /* disconnect by peer */
-	}
+		if ((numRead = read (snew, buffer, size)) < 0) {
+		    perror ("blastee read error");
+		    break;
+		}
+		if (numRead == 0 ){
+		    break; /* disconnect by peer */
+		}
 
-	blastNum += numRead;
+		blastNum += numRead;
     }
     free (buffer);
     close (snew);
@@ -187,8 +187,8 @@ static WDOG_ID blastWid;
 static void blastHandler(int intvl)
 {
     if (blastWid == NULL && (blastWid = wdCreate ()) == NULL) {
-	perror ("cannot create blast watchdog");
-	exit (1);
+		perror ("cannot create blast watchdog");
+		exit (1);
     }
 
     blastAlarm(wdIntvl);    /* Start watchdog after a minute */
@@ -227,19 +227,19 @@ static void blastRate (void)
 {
 #ifdef VXWORKS
     if (blastNum > 0) {
-	/* ISRs must not call routines that use a floating-point coprocessor. */
-	logMsg ("%d bytes/sec\n", blastNum / wdIntvl,0, 0, 0, 0, 0);
-	blastNum = 0;
+		/* ISRs must not call routines that use a floating-point coprocessor. */
+		logMsg ("%d bytes/sec\n", blastNum / wdIntvl,0, 0, 0, 0, 0);
+		blastNum = 0;
     } else {
-	logMsg ("No bytes read in the last %d seconds.\n",wdIntvl, 0, 0, 0, 0, 0);
+		logMsg ("No bytes read in the last %d seconds.\n",wdIntvl, 0, 0, 0, 0, 0);
     }
 #else
     double rateMB = (blastNum/(1024*1024)) / (double)wdIntvl;
     if (blastNum > 0) {
-	printf ("%.1f MB/sec (total %ld)\n", rateMB, blastNum);
-	blastNum = 0;
+		printf ("%.1f MB/sec (total %ld)\n", rateMB, blastNum);
+		blastNum = 0;
     } else {
-	printf ("No bytes read in the last %d seconds.\n",wdIntvl);
+		printf ("No bytes read in the last %d seconds.\n",wdIntvl);
     }
 #endif
     blastAlarm (wdIntvl);

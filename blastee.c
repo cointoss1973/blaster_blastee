@@ -9,13 +9,16 @@ modification history
 01b,26sep97,mm   cast arg 2 of bind , arg 2 of accept and arg 4 of setsockopt
 01a,29jan94,ms   cleaned up and modified for VxDemo.
 */
-
+#ifdef VXWORKS
+#include <vxWorks.h>
+#include <socket.h>
+#include <net/socketvar.h>
+#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
 #include <netdb.h>
-#include <sys/times.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,8 +27,6 @@ modification history
 long	blastNum;
 int 	wdIntvl = 10;
 
-#define	FALSE	0
-#define TRUE	1
 
 
 static void blastRecv(int snew, int size);
@@ -73,8 +74,8 @@ int blastee(int port, int size, int blen)
     /* Zero out the sock_addr structures.
      * This MUST be done before the socket calls.
      */
-    bzero ((void *)&serverAddr, sizeof (serverAddr));
-    bzero ((void *)&clientAddr, sizeof (clientAddr));
+    bzero ((char *)&serverAddr, sizeof (serverAddr));
+    bzero ((char *)&clientAddr, sizeof (clientAddr));
 
     /* Open the socket. Use ARPA Internet address format and stream sockets. */
     sock = socket (AF_INET, SOCK_STREAM, 0);
@@ -182,6 +183,8 @@ static void blastRecv(int snew, int size)
 
 #ifdef VXWORKS
 #include <wdLib.h>
+#include <sysLib.h>
+
 static WDOG_ID blastWid;
 
 static void blastHandler(int intvl)
